@@ -124,11 +124,11 @@ bool allUsed(bool used[]) {
   return true;
 }
 
-int findMin(Node nodes[]) {
+int findMin(Node nodes[], bool used[]) {
   int i, min, minID;
   min = INT_MAX;
   for (i = 0; i < numOfNodes; i++) {
-    if(nodes[i].weight < min) {
+    if(nodes[i].weight < min && used[i] == false) {
       min = nodes[i].weight;
       minID = nodes[i].id;
       printf("findMin: setting min to %d %d\n", min, minID);
@@ -137,6 +137,12 @@ int findMin(Node nodes[]) {
   return minID;
 }
 
+void printTree(Node tree[]) {
+  int i;
+  for (i = 0; i < numOfNodes; i++) {
+    printf("%d - %d \n", tree[i].parent, tree[i].id);
+  }
+}
 void mst(int src)
 {
   Node tree[numOfNodes];
@@ -165,9 +171,23 @@ void mst(int src)
       printf("All used breaking\n");
       break;
     }
-    int min = findMin(nodes);
-
+    int min = findMin(nodes, used);
+    
+    used[min] = true;
+    printf("Adding %d to tree\n", min);
+    for (i = 0; i < numOfNodes; i++) {
+      if(graph[(i*numOfNodes) + min] && used[i] == false) {
+        tree[i].parent = min;
+        tree[i].weight = graph[(i * numOfNodes) + min];
+        nodes[i].weight = tree[i].weight;
+        // Also remove this edge from the graph.
+        graph[(i * numOfNodes) + min] = 0;
+        graph[(min * numOfNodes) + i] = 0;
+      }
+    }
   }
+
+  printTree(tree);
 }
 
 void recv( pkt *p, int myRank )
@@ -199,6 +219,9 @@ void broadcast( pkt *p, int src )
 {
   createAdjacencyMatrix();
   printMatrix();
+  mst(src); 
+  printMatrix();
+  mst(src);
   int s = p-> size;
 	p -> src = src;
 	p -> dst = -1;
