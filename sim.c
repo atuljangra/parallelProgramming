@@ -27,7 +27,8 @@ extern int DIMX;
 
 int numOfNodes = 0;
 int *graph;
-
+int src;
+int treeNo;
 void checkGraph ();
 
 typedef struct {
@@ -125,6 +126,15 @@ bool allUsed(bool used[]) {
   return true;
 }
 
+int outEdges (int node) {
+  int i;
+  int count = 0;
+  for (i = 0; i < numOfNodes; i++) {
+    count += graph[(numOfNodes * node) + i];
+  }
+  printf("Outedges of %d is %d\n", node, count);
+  return count;
+}
 int findMin(Node nodes[], bool used[]) {
   int i, min, minID = -1;
   min = INT_MAX;
@@ -136,10 +146,13 @@ int findMin(Node nodes[], bool used[]) {
         minID = nodes[i].id;
         printf("Parent -1 findMin: setting min to %d %d\n", min, minID);
       }
-      else {
-          min = nodes[i].weight;
-          minID = nodes[i].id;
-          printf("Parent %d  findMin: setting min to %d %d\n",nodes[i].parent,  min, minID);
+      else if ((treeNo != 4) ? (outEdges(nodes[i].parent) > 0): 1){
+          if ((nodes[i].parent == src) ? (!nodes[nodes[i].parent].child) : 1) {
+            min = nodes[i].weight;
+            minID = nodes[i].id;
+            printf("Parent %d  findMin: setting min to %d %d %d\n",nodes[i].parent,  min, minID, 
+                nodes[nodes[i].parent].child);
+          }
       }
     }
   }
@@ -165,8 +178,9 @@ void removeUsedEdges(Node tree[]) {
   }
 }
 
-void mst(int src)
+void mst(int num)
 {
+  treeNo = num;
   Node tree[numOfNodes];
   //bool nodesIncluded[numOfNodes];
   Node nodes[numOfNodes];
@@ -189,7 +203,7 @@ void mst(int src)
 
  
   // updating src
-  nodes[src].weight = 0;
+  nodes[src].weight = 1;
   while(1) {
     if (allUsed(used)) {
       printf("All used breaking\n");
@@ -205,6 +219,9 @@ void mst(int src)
     if (nodes[min].parent != -1) {
       nodes[nodes[min].parent].child++;
       tree[tree[min].parent].child++;
+      graph[(nodes[min].parent * numOfNodes) + min] = 0;
+      printf("deleting %d -> %d i Child: %d\n", nodes[min].parent, min, 
+          nodes[nodes[min].parent].child);
     }
 
     printf("Adding %d to tree %d\n", min, nodes[min].parent);
@@ -223,7 +240,7 @@ void mst(int src)
     }
   }
   printf("Removing used edges\n");
-  removeUsedEdges(tree);
+ // removeUsedEdges(tree);
   printf("printing tree\n");
   printTree(tree);
 }
@@ -253,17 +270,18 @@ void recv( pkt *p, int myRank )
     consume( p, myRank ) ;
 }
 
-void broadcast( pkt *p, int src )
+void broadcast( pkt *p, int srce )
 {
+  src = srce;
   createAdjacencyMatrix();
   printMatrix();
-  mst(src); 
+  mst(1); 
   printMatrix();
-  mst(src);
+  mst(2);
   printMatrix();
-  mst(src);
+  mst(3);
   printMatrix();
-  mst(src);
+  mst(4);
   printMatrix();
 
   int s = p-> size;
