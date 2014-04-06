@@ -34,6 +34,7 @@ typedef struct {
   int parent;
   int id;
   int weight;
+  int child;
 }Node;
   
 void createAdjacencyMatrix () {
@@ -125,13 +126,21 @@ bool allUsed(bool used[]) {
 }
 
 int findMin(Node nodes[], bool used[]) {
-  int i, min, minID;
+  int i, min, minID = -1;
   min = INT_MAX;
   for (i = 0; i < numOfNodes; i++) {
     if(nodes[i].weight < min && used[i] == false) {
-      min = nodes[i].weight;
-      minID = nodes[i].id;
-      printf("findMin: setting min to %d %d\n", min, minID);
+      printf("findMin at %d \t", i);
+      if (nodes[i].parent == -1) { 
+        min = nodes[i].weight;
+        minID = nodes[i].id;
+        printf("Parent -1 findMin: setting min to %d %d\n", min, minID);
+      }
+      else {
+          min = nodes[i].weight;
+          minID = nodes[i].id;
+          printf("Parent %d  findMin: setting min to %d %d\n",nodes[i].parent,  min, minID);
+      }
     }
   }
   return minID;
@@ -151,7 +160,8 @@ void removeUsedEdges(Node tree[]) {
     if(tree[i].parent == -1)
       continue;
     graph[((tree[i].parent) * numOfNodes) + tree[i].id] = 0;
-    graph[tree[i].parent + (tree[i].id)*numOfNodes] = 0;
+    printf("removing %d %d\n", tree[i].parent, tree[i].id);
+    // graph[tree[i].parent + (tree[i].id)*numOfNodes] = 0;
   }
 }
 
@@ -170,9 +180,11 @@ void mst(int src)
     tree[i].id = i;
     tree[i].weight = INT_MAX;
     tree[i].parent = -1;
+    tree[i].child = 0;
     nodes[i].id = i;
     nodes[i].weight = INT_MAX;
     nodes[i].parent = -1;
+    nodes[i].child = 0;
   }
 
  
@@ -184,14 +196,25 @@ void mst(int src)
       break;
     }
     int min = findMin(nodes, used);
+    if(min == -1) {
+      printf("min is -1, continuing\n");
+      continue;
+    }
     
-    used[min] = true;
-    printf("Adding %d to tree\n", min);
+    used[min] = true;      
+    if (nodes[min].parent != -1) {
+      nodes[nodes[min].parent].child++;
+      tree[tree[min].parent].child++;
+    }
+
+    printf("Adding %d to tree %d\n", min, nodes[min].parent);
     for (i = 0; i < numOfNodes; i++) {
-      if(graph[(i*numOfNodes) + min] && used[i] == false) {
+      if(graph[(min * numOfNodes) + i] == 1 && used[i] == false) {
         tree[i].parent = min;
-        tree[i].weight = graph[(i * numOfNodes) + min];
+        nodes[i].parent = min;
+        tree[i].weight = graph[(min * numOfNodes) + i];
         nodes[i].weight = tree[i].weight;
+        printf("Changing weights of %d to %d\n", i, graph[(min * numOfNodes) + i]);
         // Also remove this edge from the graph.
         // Removing edges here is wrong.
         // graph[(i * numOfNodes) + min] = 0;
@@ -240,6 +263,9 @@ void broadcast( pkt *p, int src )
   printMatrix();
   mst(src);
   printMatrix();
+  mst(src);
+  printMatrix();
+
   int s = p-> size;
 	p -> src = src;
 	p -> dst = -1;
