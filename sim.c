@@ -143,6 +143,18 @@ void printTree(Node tree[]) {
     printf("%d - %d \n", tree[i].parent, tree[i].id);
   }
 }
+
+void removeUsedEdges(Node tree[]) {
+  int i;
+  for (i = 0; i < numOfNodes; i++) {
+    printf("%d\t", i);
+    if(tree[i].parent == -1)
+      continue;
+    graph[((tree[i].parent) * numOfNodes) + tree[i].id] = 0;
+    graph[tree[i].parent + (tree[i].id)*numOfNodes] = 0;
+  }
+}
+
 void mst(int src)
 {
   Node tree[numOfNodes];
@@ -181,12 +193,15 @@ void mst(int src)
         tree[i].weight = graph[(i * numOfNodes) + min];
         nodes[i].weight = tree[i].weight;
         // Also remove this edge from the graph.
-        graph[(i * numOfNodes) + min] = 0;
-        graph[(min * numOfNodes) + i] = 0;
+        // Removing edges here is wrong.
+        // graph[(i * numOfNodes) + min] = 0;
+        // graph[(min * numOfNodes) + i] = 0;
       }
     }
   }
-
+  printf("Removing used edges\n");
+  removeUsedEdges(tree);
+  printf("printing tree\n");
   printTree(tree);
 }
 
@@ -222,6 +237,9 @@ void broadcast( pkt *p, int src )
   mst(src); 
   printMatrix();
   mst(src);
+  printMatrix();
+  mst(src);
+  printMatrix();
   int s = p-> size;
 	p -> src = src;
 	p -> dst = -1;
