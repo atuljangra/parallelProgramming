@@ -61,13 +61,14 @@ void createAdjacencyMatrix () {
     for (i = 0; i < DIMX; i++) {
       iter = (i * DIMY) + j;
       jter = ((i + 1) * DIMY) + j;
-      printf("Connecting %d %d \t", iter, jter);
       graph[(iter*numOfNodes) + jter] = 1;
       graph[(jter*numOfNodes) + iter] = 1;
     }
     // Terminal links.
-
-    printf("WUT\n");
+    iter = (0*DIMY) + j;
+    jter = ((DIMX - 1) * DIMY) + j;
+    graph[(iter*numOfNodes) + jter] = 1;
+    graph[(jter*numOfNodes) + iter] = 1;
   }
 }
 
