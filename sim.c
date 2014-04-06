@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "common.h"
+#include <stdbool.h>
 
 /*
 // Example of node numbering
@@ -25,6 +27,15 @@ extern int DIMX;
 
 int numOfNodes = 0;
 int *graph;
+
+void checkGraph ();
+
+typedef struct {
+  int parent;
+  int id;
+  int weight;
+}Node;
+  
 void createAdjacencyMatrix () {
   numOfNodes = DIMY * DIMX;
   // Allocate the graph
@@ -42,7 +53,7 @@ void createAdjacencyMatrix () {
   int iter, jter;
   // Create row-wise links.
   for (i = 0; i < DIMX; i++) {
-    for (j = 0; j < DIMY; j++) {
+    for (j = 0; j < DIMY - 1; j++) {
       iter = (i*DIMY) + j;
       jter = (i*DIMY) + j + 1;
       graph[(iter*numOfNodes) + jter] = 1;
@@ -58,7 +69,7 @@ void createAdjacencyMatrix () {
 
   // Creating columnwise links.
   for (j = 0; j < DIMY; j++) {
-    for (i = 0; i < DIMX; i++) {
+    for (i = 0; i < DIMX - 1; i++) {
       iter = (i * DIMY) + j;
       jter = ((i + 1) * DIMY) + j;
       graph[(iter*numOfNodes) + jter] = 1;
@@ -70,16 +81,92 @@ void createAdjacencyMatrix () {
     graph[(iter*numOfNodes) + jter] = 1;
     graph[(jter*numOfNodes) + iter] = 1;
   }
+
+  // A simple check for the graph.
+  checkGraph();
+
+}
+
+void checkGraph() {
+  int i, j;         
+  int count = 0;
+  for (i = 0; i < numOfNodes; i++) {
+    count = 0;
+    for (j = 0; j < numOfNodes; j++) {
+      count += graph[(i * numOfNodes ) + j];
+    }
+    if (count != 4) {
+      printf("ERROR: Problem in building the graph. %d %d\n", i, j);
+    }
+  }
 }
 
 void printMatrix() {
   printf("\n");
-  int i, j;
+  int i, j, sum;
   for (i = 0; i < numOfNodes ; i++) {
+    sum = 0;
     for (j = 0; j < numOfNodes; j++) {
+      sum +=  graph[ (i * numOfNodes) + j];
       printf("%d  ", graph[ (i * numOfNodes) + j]);
     }
+    printf("%d ", sum);
     printf("\n");
+  }
+}
+
+bool allUsed(bool used[]) {
+  int i;
+  for (i = 0; i < numOfNodes; i++) {
+    if (used[i] == false)
+      return false;
+  }
+  return true;
+}
+
+int findMin(Node nodes[]) {
+  int i, min, minID;
+  min = INT_MAX;
+  for (i = 0; i < numOfNodes; i++) {
+    if(nodes[i].weight < min) {
+      min = nodes[i].weight;
+      minID = nodes[i].id;
+      printf("findMin: setting min to %d %d\n", min, minID);
+    }
+  }
+  return minID;
+}
+
+void mst(int src)
+{
+  Node tree[numOfNodes];
+  //bool nodesIncluded[numOfNodes];
+  Node nodes[numOfNodes];
+
+  bool used[numOfNodes];
+
+  int i;
+  for (i = 0; i < numOfNodes; i++) 
+    used[i] = false;
+  for (i = 0; i < numOfNodes; i++) {
+    tree[i].id = i;
+    tree[i].weight = INT_MAX;
+    tree[i].parent = -1;
+    nodes[i].id = i;
+    nodes[i].weight = INT_MAX;
+    nodes[i].parent = -1;
+  }
+
+ 
+  // updating src
+  nodes[src].weight = 0;
+  while(1) {
+    if (allUsed(used)) {
+      printf("All used breaking\n");
+      break;
+    }
+    int min = findMin(nodes);
+
   }
 }
 
@@ -116,16 +203,17 @@ void broadcast( pkt *p, int src )
 	p -> src = src;
 	p -> dst = -1;
 	p -> hdr1 = 1;
-	p -> size = s/4 + ((s%4 > 0)? 1 : 0);
+	p -> size = s/2 + ((s%2 > 0)? 1 : 0);
 	recv(p, src);
-	p -> hdr1 = 2;
+	/*p -> hdr1 = 2;
 	p -> size = s/4 +((s%4 > 1) ? 1 : 0);
 	recv(p, src);
 	p -> size = s/4 + ((s%4 > 2) ? 1: 0);
 	p -> hdr1 = 3;
 	recv(p, src);
-	p -> size = s/4;
-	p -> hdr1 = 4;
+	*/
+  p -> size = s/2;
+	p -> hdr1 = 2;
 	recv(p, src);
 	}
 
