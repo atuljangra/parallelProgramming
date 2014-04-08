@@ -258,47 +258,42 @@ void mst(int num)
 // This will return true for (a, f) and (a, b).
 // Also, (c, a) (c, e) would also return true.
 bool isRight(int a, int b) {
-  if (COL(a) == COL(b) + 1)
+  if (COL(a) == COL(b) - 1)
     return true;
 
-  if ((COL(a) + COL(b) + 1) == DIMY)
+  if ((COL(a) == DIMY - 1) && COL(b) == 0 && COL(a) > COL(b))
     return true;
 
   return false;
 }
 
 bool isLeft(int a, int b) {
-  if (COL(a) == COL(b) - 1)
+  if (COL(a) == COL(b) + 1)
     return true;
-  if((COL(a) + COL(b) + 1) == DIMY)
+  if((COL(a) == 0) && (COL(b) == DIMY-1) && COL(b) > COL(a))
+    return true;
+  return false;
+}
+
+bool isDown(int a, int b) {
+  if (ROW(a) == ROW(b) - 1)
+    return true;
+  if (ROW(a) == DIMX - 1 && ROW(b) == 0 && ROW(a) > ROW(b))
     return true;
 
   return false;
 }
+
+bool isUp(int a, int b) {
+  if (ROW(a) == ROW(b) + 1)
+    return true;
+  if (ROW(a) == 0 && ROW(b) == DIMX - 1 && ROW(a) < ROW(b))
+    return true;
+  return false;
+}
+
 void recv( pkt *p, int myRank )
 {
-    /* Algorithm:
-     * 
-     * 1. Check if src is along my x dimension.
-     * 2. If so,
-     *    a. send along y dimension.
-     *    b. Also forward along x dimension if not last node (to left of src).
-     * 3. If not,
-     *    a. forward along y dimension if not last node (above line of src).
-     * 4. consume.
-     */
-    /*
-    if ( ROW( p->src ) == ROW( myRank ) )
-    {
-        send( p, myRank, DOWN(myRank) ) ;
-        if ( LEFT(p->src) != myRank )
-            send( p, myRank, RIGHT(myRank) ) ;
-    }
-    else if ( ROW(UP(p->src)) != ROW(myRank) )
-            send( p, myRank, DOWN(myRank) ) ;
-
-    consume( p, myRank ) ;
-    */
   switch (p -> hdr1) {
     case 0:
       if (myRank == p -> src) {
@@ -310,7 +305,7 @@ void recv( pkt *p, int myRank )
         // Send in right and down direction.
         if (RIGHT(myRank) != p -> src) 
           send(p, myRank, RIGHT(myRank));
-        if(ROW(myRank) != ROW(p -> src) - 1)
+        if(ROW(DOWN(myRank)) != ROW(p -> src))
           send(p, myRank, DOWN(myRank));
       }
       else if (COL(myRank) != COL(p -> src) && RIGHT(myRank) != p -> src) {
@@ -328,12 +323,12 @@ void recv( pkt *p, int myRank )
           if (DOWN (myRank != p -> src))
               send (p, myRank, DOWN(myRank));
         }
-        else if (ROW(myRank) == ROW( p -> src) + 1) {
+        else if (isDown(p -> src, myRank)) {
           // Send in down and left direction.
           if (DOWN (myRank) != p -> src)
               send (p, myRank, DOWN(myRank));
           
-          if (COL (myRank) != COL(p -> src) + 1)
+          if (COL(LEFT(myRank)) != COL( p-> src))
               send (p, myRank, LEFT(myRank));
         }
         else if (ROW(myRank) != ROW(p -> src) && DOWN(myRank) != p -> src) {
@@ -351,11 +346,11 @@ void recv( pkt *p, int myRank )
         if (LEFT(myRank) != p -> src)
             send (p, myRank, LEFT(myRank));
       }
-      else if ((COL(myRank) - COL(p -> src)) == DIMY - 1){
+      else if (isLeft(p-> src, myRank)){
         // Send in left and up direction.
         if (LEFT(myRank) != p -> src) 
           send(p, myRank, LEFT(myRank));
-        if (ROW(myRank) != ROW(p -> src) + 1)
+        if (ROW(UP(myRank)) != ROW(p-> src))
           send(p, myRank, UP(myRank));
       }
       else if (COL(myRank) != COL(p -> src) && LEFT(myRank) != p -> src) {
@@ -375,12 +370,12 @@ void recv( pkt *p, int myRank )
         if (UP (myRank != p -> src))
               send (p, myRank, UP(myRank));
         }
-        else if (ROW(myRank) == ROW( p -> src) - 1) {
+        else if (isUp(p -> src, myRank)) {
           // Send in up and right direction.
           if (UP (myRank) != p -> src)
               send (p, myRank, UP (myRank));
           
-          if (COL (myRank) != COL(p -> src) +  DIMY - 1)
+          if (COL(RIGHT(myRank)) != COL(p -> src))
               send (p, myRank, RIGHT(myRank));
         }
         else if (ROW(myRank) != ROW(p -> src) && UP (myRank) != p -> src) {
@@ -399,15 +394,6 @@ void broadcast( pkt *p, int srce )
 {
   src = srce;
   createAdjacencyMatrix();
-//  mst(1); 
-//  printMatrix();
-//  mst(2);
-//  printMatrix();
-//  mst(3);
-//  printMatrix();
-//  mst(4);
-//  printMatrix();
-
   int s = p-> size;
 	p -> src = src;
 	p -> dst = -1;

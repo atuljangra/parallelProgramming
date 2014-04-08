@@ -8,7 +8,9 @@ int main( int argc, char ** argv )
     setup( TORUS, 3, 5 ) ;
     create_packet( &p, 5, -1, 1, 1, 1 ) ;
     initStats() ;
-    broadcast( &p, 5 ) ;
+    int src;
+    scanf("%d", &src);
+    broadcast( &p, src) ;
     printStats() ;
 
     return 0 ;
