@@ -250,10 +250,30 @@ void mst(int num)
   printTree(tree);
 }
 
-void symMst(int num) {
-  treeNo = num;
+// True when b is rightwards to a
+// a -- b
+// or 
+// a -- b -- c
+// e -- f --g
+// This will return true for (a, f) and (a, b).
+// Also, (c, a) (c, e) would also return true.
+bool isRight(int a, int b) {
+  if (COL(a) == COL(b) + 1)
+    return true;
 
+  if ((COL(a) + COL(b) + 1) == DIMY)
+    return true;
 
+  return false;
+}
+
+bool isLeft(int a, int b) {
+  if (COL(a) == COL(b) - 1)
+    return true;
+  if((COL(a) + COL(b) + 1) == DIMY)
+    return true;
+
+  return false;
 }
 void recv( pkt *p, int myRank )
 {
@@ -286,7 +306,7 @@ void recv( pkt *p, int myRank )
         if (RIGHT(myRank) != p -> src)
             send (p, myRank, RIGHT(myRank));
       }
-      else if (COL(myRank) == COL(p -> src) + 1) {
+      else if (isRight(p -> src, myRank)) {
         // Send in right and down direction.
         if (RIGHT(myRank) != p -> src) 
           send(p, myRank, RIGHT(myRank));
@@ -379,7 +399,6 @@ void broadcast( pkt *p, int srce )
 {
   src = srce;
   createAdjacencyMatrix();
-  printMatrix();
 //  mst(1); 
 //  printMatrix();
 //  mst(2);
@@ -389,8 +408,6 @@ void broadcast( pkt *p, int srce )
 //  mst(4);
 //  printMatrix();
 
-  symMst(1);
-  printMatrix();
   int s = p-> size;
 	p -> src = src;
 	p -> dst = -1;
