@@ -25,6 +25,7 @@ extern int DIMX;
 #define RIGHT( p ) ( p + ( ( (p % DIMY) == DIMY-1 ) ? ( 1 - DIMY ) : 1 ) )
 #define LEFT( p )  ( p + ( ( (p % DIMY) == 0 ) ? ( DIMY - 1 ) : - 1 ) )
 
+enum dir{RIGHT, DOWN, LEFT, UP};
 int numOfNodes = 0;
 int *graph;
 int src;
@@ -106,6 +107,7 @@ void checkGraph() {
 void printMatrix() {
   printf("\n");
   int i, j, sum;
+  int total = 0;
   for (i = 0; i < numOfNodes ; i++) {
     sum = 0;
     for (j = 0; j < numOfNodes; j++) {
@@ -113,8 +115,10 @@ void printMatrix() {
       printf("%d  ", graph[ (i * numOfNodes) + j]);
     }
     printf("%d ", sum);
+    total += sum;
     printf("\n");
   }
+  printf("Total links: %d\n", total);
 }
 
 bool allUsed(bool used[]) {
@@ -135,6 +139,7 @@ int outEdges (int node) {
   printf("Outedges of %d is %d\n", node, count);
   return count;
 }
+
 int findMin(Node nodes[], bool used[]) {
   int i, min, minID = -1;
   min = INT_MAX;
@@ -245,6 +250,11 @@ void mst(int num)
   printTree(tree);
 }
 
+void symMst(int num) {
+  treeNo = num;
+
+
+}
 void recv( pkt *p, int myRank )
 {
     /* Algorithm:
@@ -257,7 +267,7 @@ void recv( pkt *p, int myRank )
      *    a. forward along y dimension if not last node (above line of src).
      * 4. consume.
      */
-
+    /*
     if ( ROW( p->src ) == ROW( myRank ) )
     {
         send( p, myRank, DOWN(myRank) ) ;
@@ -268,6 +278,10 @@ void recv( pkt *p, int myRank )
             send( p, myRank, DOWN(myRank) ) ;
 
     consume( p, myRank ) ;
+    */
+  if (p -> hdr1 == 0) {
+    
+  }
 }
 
 void broadcast( pkt *p, int srce )
@@ -275,19 +289,21 @@ void broadcast( pkt *p, int srce )
   src = srce;
   createAdjacencyMatrix();
   printMatrix();
-  mst(1); 
-  printMatrix();
-  mst(2);
-  printMatrix();
-  mst(3);
-  printMatrix();
-  mst(4);
-  printMatrix();
+//  mst(1); 
+//  printMatrix();
+//  mst(2);
+//  printMatrix();
+//  mst(3);
+//  printMatrix();
+//  mst(4);
+//  printMatrix();
 
+  symMst(1);
+  printMatrix();
   int s = p-> size;
 	p -> src = src;
 	p -> dst = -1;
-	p -> hdr1 = 1;
+	p -> hdr1 = 0;
 	p -> size = s/2 + ((s%2 > 0)? 1 : 0);
 	recv(p, src);
 	/*p -> hdr1 = 2;
@@ -298,7 +314,7 @@ void broadcast( pkt *p, int srce )
 	recv(p, src);
 	*/
   p -> size = s/2;
-	p -> hdr1 = 2;
+	p -> hdr1 = 1;
 	recv(p, src);
 	}
 
