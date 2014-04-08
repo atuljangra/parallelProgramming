@@ -279,8 +279,99 @@ void recv( pkt *p, int myRank )
 
     consume( p, myRank ) ;
     */
-  if (p -> hdr1 == 0) {
-    
+  switch (p -> hdr1) {
+    case 0:
+      if (myRank == p -> src) {
+        // Send rightwards
+        if (RIGHT(myRank) != p -> src)
+            send (p, myRank, RIGHT(myRank));
+      }
+      else if (COL(myRank) == COL(p -> src) + 1) {
+        // Send in right and down direction.
+        if (RIGHT(myRank) != p -> src) 
+          send(p, myRank, RIGHT(myRank));
+        if(ROW(myRank) != ROW(p -> src) - 1)
+          send(p, myRank, DOWN(myRank));
+      }
+      else if (COL(myRank) != COL(p -> src) && RIGHT(myRank) != p -> src) {
+        // Send only rightwards
+        send (p, myRank, RIGHT(myRank));
+      }                                 
+      else {
+        // Do not send at all
+      }
+      consume(p, myRank);
+      break;
+    case 1:
+        if (myRank == p -> src) {
+          // Send downwards
+          if (DOWN (myRank != p -> src))
+              send (p, myRank, DOWN(myRank));
+        }
+        else if (ROW(myRank) == ROW( p -> src) + 1) {
+          // Send in down and left direction.
+          if (DOWN (myRank) != p -> src)
+              send (p, myRank, DOWN(myRank));
+          
+          if (COL (myRank) != COL(p -> src) + 1)
+              send (p, myRank, LEFT(myRank));
+        }
+        else if (ROW(myRank) != ROW(p -> src) && DOWN(myRank) != p -> src) {
+                send (p, myRank, DOWN(myRank));
+        }
+        else {
+          // Do nothing
+          printf("Do nothing for %d\n", myRank);
+        }
+        consume(p, myRank);
+      break;
+    case 2:
+      if (myRank == p -> src) {
+        // Send leftwards
+        if (LEFT(myRank) != p -> src)
+            send (p, myRank, LEFT(myRank));
+      }
+      else if ((COL(myRank) - COL(p -> src)) == DIMY - 1){
+        // Send in left and up direction.
+        if (LEFT(myRank) != p -> src) 
+          send(p, myRank, LEFT(myRank));
+        if (ROW(myRank) != ROW(p -> src) + 1)
+          send(p, myRank, UP(myRank));
+      }
+      else if (COL(myRank) != COL(p -> src) && LEFT(myRank) != p -> src) {
+        // Send only LEFT
+        printf("%d %d %d \n", myRank, COL(myRank), COL(p -> src));
+        send (p, myRank, LEFT(myRank));
+      }                                 
+      else {
+        // Do not send at all
+      }
+      consume(p, myRank);
+      break;              
+
+    case 3:  
+      if (myRank == p -> src) {
+        // Send upwards
+        if (UP (myRank != p -> src))
+              send (p, myRank, UP(myRank));
+        }
+        else if (ROW(myRank) == ROW( p -> src) - 1) {
+          // Send in up and right direction.
+          if (UP (myRank) != p -> src)
+              send (p, myRank, UP (myRank));
+          
+          if (COL (myRank) != COL(p -> src) +  DIMY - 1)
+              send (p, myRank, RIGHT(myRank));
+        }
+        else if (ROW(myRank) != ROW(p -> src) && UP (myRank) != p -> src) {
+                send (p, myRank, UP(myRank));
+        }
+        else {
+          // Do nothing
+          printf("Do nothing for %d\n", myRank);
+        }
+        consume(p, myRank);      
+        break;
   }
 }
 
@@ -304,17 +395,20 @@ void broadcast( pkt *p, int srce )
 	p -> src = src;
 	p -> dst = -1;
 	p -> hdr1 = 0;
-	p -> size = s/2 + ((s%2 > 0)? 1 : 0);
+	p -> size = s/4 + ((s%4 > 0)? 1 : 0);
 	recv(p, src);
-	/*p -> hdr1 = 2;
+  printf("------------------------1--------------------------------------\n");
+	p -> hdr1 = 1;
 	p -> size = s/4 +((s%4 > 1) ? 1 : 0);
 	recv(p, src);
+  printf("------------------------2-------------------------------------\n");
 	p -> size = s/4 + ((s%4 > 2) ? 1: 0);
+	p -> hdr1 = 2;
+	recv(p, src);
+  printf("------------------------3-------------------------------------\n");
+  p -> size = s/4;
 	p -> hdr1 = 3;
 	recv(p, src);
-	*/
-  p -> size = s/2;
-	p -> hdr1 = 1;
-	recv(p, src);
-	}
+  printf("--------------------------------------------------------------\n");
+  }
 
