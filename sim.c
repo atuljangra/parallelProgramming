@@ -336,7 +336,7 @@ void recv( pkt *p, int myRank )
         }
         else {
           // Do nothing
-          printf("Do nothing for %d\n", myRank);
+//          printf("Do nothing for %d\n", myRank);
         }
         consume(p, myRank);
       break;
@@ -355,7 +355,7 @@ void recv( pkt *p, int myRank )
       }
       else if (COL(myRank) != COL(p -> src) && LEFT(myRank) != p -> src) {
         // Send only LEFT
-        printf("%d %d %d \n", myRank, COL(myRank), COL(p -> src));
+//        printf("%d %d %d \n", myRank, COL(myRank), COL(p -> src));
         send (p, myRank, LEFT(myRank));
       }                                 
       else {
@@ -383,7 +383,7 @@ void recv( pkt *p, int myRank )
         }
         else {
           // Do nothing
-          printf("Do nothing for %d\n", myRank);
+  //        printf("Do nothing for %d\n", myRank);
         }
         consume(p, myRank);      
         break;
@@ -400,18 +400,18 @@ void broadcast( pkt *p, int srce )
 	p -> hdr1 = 0;
 	p -> size = s/4 + ((s%4 > 0)? 1 : 0);
 	recv(p, src);
-  printf("------------------------1--------------------------------------\n");
+ // printf("------------------------1--------------------------------------\n");
 	p -> hdr1 = 1;
 	p -> size = s/4 +((s%4 > 1) ? 1 : 0);
 	recv(p, src);
-  printf("------------------------2-------------------------------------\n");
+  //printf("------------------------2-------------------------------------\n");
 	p -> size = s/4 + ((s%4 > 2) ? 1: 0);
 	p -> hdr1 = 2;
 	recv(p, src);
-  printf("------------------------3-------------------------------------\n");
+  //printf("------------------------3-------------------------------------\n");
   p -> size = s/4;
 	p -> hdr1 = 3;
 	recv(p, src);
-  printf("--------------------------------------------------------------\n");
+  //printf("--------------------------------------------------------------\n");
   }
 
