@@ -301,19 +301,28 @@ void recv( pkt *p, int myRank )
         if (RIGHT(myRank) != p -> src)
             send (p, myRank, RIGHT(myRank));
       }
-      else if (isRight(p -> src, myRank)) {
+      else if (ROW(myRank) == ROW(p -> src)) {
+        // send righwards.
+        if (RIGHT(myRank) != p -> src)
+          send(p, myRank, RIGHT(myRank));
+        if (ROW(DOWN(myRank)) != ROW(p -> src))
+          send(p, myRank, DOWN(myRank));
+      }
+      else if (isLeft(p -> src, myRank)) {
         // Send in right and down direction.
         if (RIGHT(myRank) != p -> src) 
           send(p, myRank, RIGHT(myRank));
         if(ROW(DOWN(myRank)) != ROW(p -> src))
           send(p, myRank, DOWN(myRank));
       }
-      else if (COL(myRank) != COL(p -> src) && RIGHT(myRank) != p -> src) {
+      
+      else if (COL(myRank) != COL(p -> src) && ROW(DOWN(myRank)) != ROW(p -> src)) {
         // Send only rightwards
-        send (p, myRank, RIGHT(myRank));
+        send (p, myRank, DOWN(myRank));
       }                                 
       else {
         // Do not send at all
+        printf("nothing to do for %d\n", myRank);
       }
       consume(p, myRank);
       break;
@@ -323,7 +332,15 @@ void recv( pkt *p, int myRank )
           if (DOWN (myRank != p -> src))
               send (p, myRank, DOWN(myRank));
         }
-        else if (isDown(p -> src, myRank)) {
+        else if (COL(myRank) == COL(p -> src)) {
+          if (DOWN (myRank) != p -> src)
+            send (p, myRank, DOWN(myRank));
+          
+          if (COL(LEFT(myRank)) != COL( p-> src))
+            send(p, myRank, LEFT(myRank));
+
+        }
+        else if (isUp(p -> src, myRank)) {
           // Send in down and left direction.
           if (DOWN (myRank) != p -> src)
               send (p, myRank, DOWN(myRank));
@@ -331,8 +348,8 @@ void recv( pkt *p, int myRank )
           if (COL(LEFT(myRank)) != COL( p-> src))
               send (p, myRank, LEFT(myRank));
         }
-        else if (ROW(myRank) != ROW(p -> src) && DOWN(myRank) != p -> src) {
-                send (p, myRank, DOWN(myRank));
+        else if (ROW(myRank) != ROW(p -> src) && COL(LEFT(myRank)) != COL(p -> src)) {
+                send (p, myRank, LEFT(myRank));
         }
         else {
           // Do nothing
@@ -345,16 +362,23 @@ void recv( pkt *p, int myRank )
         if (LEFT(myRank) != p -> src)
             send (p, myRank, LEFT(myRank));
       }
-      else if (isLeft(p-> src, myRank)){
+      else if (ROW(myRank) == ROW(p -> src)) {
         // Send in left and up direction.
         if (LEFT(myRank) != p -> src) 
           send(p, myRank, LEFT(myRank));
         if (ROW(UP(myRank)) != ROW(p-> src))
           send(p, myRank, UP(myRank));
       }
-      else if (COL(myRank) != COL(p -> src) && LEFT(myRank) != p -> src) {
+      else if (isRight(p-> src, myRank)){
+        // Send in left and up direction.
+        if (LEFT(myRank) != p -> src) 
+          send(p, myRank, LEFT(myRank));
+        if (ROW(UP(myRank)) != ROW(p-> src))
+          send(p, myRank, UP(myRank));
+      }
+      else if (COL(myRank) != COL(p -> src) && ROW(UP(myRank)) != ROW(p -> src)) {
         // Send only LEFT
-        send (p, myRank, LEFT(myRank));
+        send (p, myRank, UP(myRank));
       }                                 
       else {
         // Do not send at all
@@ -368,7 +392,8 @@ void recv( pkt *p, int myRank )
         if (UP (myRank != p -> src))
               send (p, myRank, UP(myRank));
         }
-        else if (isUp(p -> src, myRank)) {
+        else if (COL(myRank) == COL(p -> src)) {
+        
           // Send in up and right direction.
           if (UP (myRank) != p -> src)
               send (p, myRank, UP (myRank));
@@ -376,8 +401,16 @@ void recv( pkt *p, int myRank )
           if (COL(RIGHT(myRank)) != COL(p -> src))
               send (p, myRank, RIGHT(myRank));
         }
-        else if (ROW(myRank) != ROW(p -> src) && UP (myRank) != p -> src) {
-                send (p, myRank, UP(myRank));
+        else if (isDown(p -> src, myRank)) {
+          // Send in up and right direction.
+          if (UP (myRank) != p -> src)
+              send (p, myRank, UP (myRank));
+          
+          if (COL(RIGHT(myRank)) != COL(p -> src))
+              send (p, myRank, RIGHT(myRank));
+        }
+        else if (ROW(myRank) != ROW(p -> src) && COL(RIGHT(myRank)) != ROW(p -> src)) {
+                send (p, myRank, RIGHT(myRank));
         }
         else {
           // Do nothing
@@ -395,15 +428,19 @@ void broadcast( pkt *p, int srce )
 	p -> dst = -1;
 	p -> hdr1 = 0;
 	p -> size = s/4 + ((s%4 > 0)? 1 : 0);
-	recv(p, src);
+ // recv(p, src);
+  printf("----------------------------------------------------------------\n");
 	p -> hdr1 = 1;
 	p -> size = s/4 +((s%4 > 1) ? 1 : 0);
-	recv(p, src);
+ // recv(p, src);
+  printf("----------------------------------------------------------------\n");
 	p -> size = s/4 + ((s%4 > 2) ? 1: 0);
 	p -> hdr1 = 2;
-	recv(p, src);
+ // recv(p, src);
+  printf("----------------------------------------------------------------\n");
   p -> size = s/4;
 	p -> hdr1 = 3;
-	recv(p, src);
+  // recv(p, src);
+  printf("----------------------------------------------------------------\n");
   }
 

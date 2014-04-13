@@ -2,6 +2,7 @@
 #include "common.h"
 
 #define MAXRANKS 1024
+#define MYDBG
 int DIMX, DIMY ;
 int numRanks ;
 int stats[MAXRANKS][3] ;
