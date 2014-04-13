@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "common.h"
 
-#define MAXRANKS 1024
+#define MAXRANKS 5000
 #define MYDBG
 int DIMX, DIMY ;
 int numRanks ;

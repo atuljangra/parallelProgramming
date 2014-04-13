@@ -322,7 +322,6 @@ void recv( pkt *p, int myRank )
       }                                 
       else {
         // Do not send at all
-        printf("nothing to do for %d\n", myRank);
       }
       consume(p, myRank);
       break;
