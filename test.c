@@ -5,11 +5,12 @@ int main( int argc, char ** argv )
 {
     pkt p ;
 
-    setup( TORUS, 3, 5 ) ;
-    create_packet( &p, 5, -1, 1, 1, 1 ) ;
-    initStats() ;
     int src;
-    scanf("%d", &src);
+    int i, j;
+    scanf(" %d %d %d", &i, &j, &src);
+    setup( TORUS, i, j) ;
+    create_packet( &p, src, -1, 1, 1, 1 ) ;
+    initStats() ;
     broadcast( &p, src) ;
     printStats() ;
 
